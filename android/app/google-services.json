@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "754700437855",
+    "project_id": "w2k-e0a02",
+    "storage_bucket": "w2k-e0a02.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:754700437855:android:6a14adcf3fc76a7c3b8eea",
+        "android_client_info": {
+          "package_name": "com.prahen.w2k"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "754700437855-7msqdv7815v5ft1bqtjfcv9q0n04hqdv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkvdqRWJC2daa3UIUq4itTK9hGqAt_PPE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "754700437855-7msqdv7815v5ft1bqtjfcv9q0n04hqdv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
