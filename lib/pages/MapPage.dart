@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:w2k/constants.dart';
 //import 'package:w2k/services/location.dart';
 
 class MapPage extends StatefulWidget {
@@ -61,7 +62,9 @@ class MapPageState extends State<MapPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: false,
       body: Container(
+        color: kHomecolor,
         child: Stack(
           children: <Widget>[
             _buildGoogleMap(context, latitude,longitude),
@@ -79,7 +82,7 @@ class MapPageState extends State<MapPage> {
     return Align(
       alignment: Alignment.topLeft,
       child: IconButton(
-          icon: Icon(FontAwesomeIcons.searchMinus,color:Colors.deepOrange),
+          icon: Icon(FontAwesomeIcons.searchMinus,color: kPrimarycolor),
           onPressed: () {
             zoomVal--;
             _minus( zoomVal);
@@ -91,7 +94,7 @@ class MapPageState extends State<MapPage> {
     return Align(
       alignment: Alignment.topRight,
       child: IconButton(
-          icon: Icon(FontAwesomeIcons.searchPlus,color:Colors.deepOrange),
+          icon: Icon(FontAwesomeIcons.searchPlus,color: kPrimarycolor),
           onPressed: () {
             zoomVal++;
             _plus(zoomVal);
@@ -192,9 +195,10 @@ class MapPageState extends State<MapPage> {
         Padding(
           padding: const EdgeInsets.only(left: 8.0),
           child: Container(
-              child: Text(restaurantName,
+              child: Text(
+                restaurantName,
                 style: TextStyle(
-                    color: Colors.deepOrangeAccent,
+                    color: kPrimarycolor,
                     fontSize: 24.0,
                     fontWeight: FontWeight.bold),
               )),
@@ -212,7 +216,7 @@ class MapPageState extends State<MapPage> {
     if(latitude==null || longitude==null){
       return Center(
         child: CircularProgressIndicator(
-          backgroundColor: Colors.deepOrange,
+          backgroundColor: kPrimarycolor,
         ),
       );
     }

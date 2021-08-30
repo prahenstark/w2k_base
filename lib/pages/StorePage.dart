@@ -1,260 +1,150 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:w2k/constants.dart';
+import 'package:w2k/constants.dart';
+import 'package:w2k/constants.dart';
+import 'package:w2k/constants.dart';
+import 'package:w2k/constants.dart';
+import 'package:w2k/constants.dart';
+import 'package:w2k/constants.dart';
+import 'package:w2k/model/ShopModel.dart';
 
 final _firestore = FirebaseFirestore.instance;
 
-class ShopPage extends StatefulWidget {
+class StorePage extends StatefulWidget {
   @override
-  _ShopPageState createState() => _ShopPageState();
+  _StorePageState createState() => _StorePageState();
 }
 
-class _ShopPageState extends State<ShopPage> {
-
-  //List shopList = [];
-
-  @override
-  void initState() {
-    //fetchDatabaseList();
-    super.initState();
-  }
-
-  // fetchDatabaseList() async{
-  //   dynamic resultant = await DatabaseManager().getShopList();
-  //
-  //   if (resultant ==null) {
-  //     print("Unable to retrive");
-  //   } else {
-  //     print('inside fetcher');
-  //     setState(() {
-  //       shopList = resultant;
-  //       print(resultant.runtimeType);
-  //     });
-  //   }
-  // }
-
-  var titleList = [
-    "Ganesh Grocery",
-    "Ganesh Grocery",
-    "Ganesh Grocery",
-  ];
-
-  var imageArray = [
-    AssetImage("assets/shop1.jpeg"),
-    AssetImage("assets/shop2.jpeg"),
-    AssetImage("assets/shop3.jpeg"),
-  ];
-
-  var subtitleList = [
-    "opens from 8 am to 10 pm",
-    "opens from 8 am to 10 pm",
-    "opens from 8 am to 10 pm",
-  ];
-
-  var trilingList = [
-    "1.2",
-    "0.6",
-    "3",
-  ];
-
+class _StorePageState extends State<StorePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      //body: _buildBody(context)
       body: Container(
-        child: ListView.builder(
-          itemCount: 3,
-          scrollDirection: Axis.vertical,
-          itemBuilder: (context, index) => Container(
-            child: Column(
-              children: <Widget>[
-                ListTile(
-                  //title: Text(shopList[index].data['name']),
-                  //subtitle: Text("Opens at" + shopList[index].data['opensAt'] + "and closes at" + shopList[index].data  ['closesAt']),
-                  title: Text(titleList[index]),
-                  subtitle: Text(subtitleList[index]),
-                  isThreeLine: true,
-                  // onTap: () {
-                  //   print('tapped');
-                  //   return MapPage();
-                  // },
-                  leading: ClipRRect(
-                    borderRadius: BorderRadius.circular(5.0),
-                    child: Image(
-                      image: imageArray[index],
-                    ),
-                  ),
-                  //  leading: CircleAvatar(
-                  //    backgroundImage: imageArray[index],
+        color: kHomecolor,
+        //color: Color.fromARGB(40,9,167,109),
+        // decoration: BoxDecoration(
+        //   image: DecorationImage(
+        //     image: AssetImage('assets/home1.jpeg'),
+        //     fit: BoxFit.cover,
+        //     colorFilter: ColorFilter.mode(
+        //         Colors.white.withOpacity(0.9), BlendMode.dstATop),
+        //   ),
+        // ),
+        child: StreamBuilder<QuerySnapshot>(
+            stream: _firestore.collection("shops").snapshots(),
+            builder: (context, dataSnapshot) {
+              if (!dataSnapshot.hasData) {
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+              return Container(
+                child: ListView.builder(
+                  scrollDirection: Axis.vertical,
+                  itemBuilder: (context, index) {
+                    ShopModel shopModel = ShopModel.fromJson(
+                        dataSnapshot.data.docs[index].data());
+                    return shopInfo(shopModel, context);
+                  },
+                  itemCount: dataSnapshot.data.docs.length,
                 ),
-
-              ],
-            ),
-          ),
-        ),
+              );
+            }),
       ),
     );
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Widget _buildBody(BuildContext context) {
-//   return StreamBuilder<QuerySnapshot>(
-//     stream: _firestore.collection('shop').snapshots(),
-//     builder: (context, snapshot) {
-//       if (!snapshot.hasData) {
-//         return Center(
-//           child: CircularProgressIndicator(
-//             backgroundColor: Colors.lightBlueAccent,
-//           ),
-//         );
-//       }
-//
-//       return _buildList(context, snapshot.data.docs);
-//     },
-//   );
-// }
-//
-// Widget _buildList(BuildContext context, List<DocumentSnapshot> snapshot) {
-//   return ListView(
-//       padding: const EdgeInsets.only(top: 20.0),
-//       children: snapshot.map((data) => _buildListItem(context, data)).toList()
-//   );
-// }
-//
-// Widget _buildListItem(BuildContext context, DocumentSnapshot data, ) {
-//   final record = Record.fromSnapshot(data);
-//
-//   print(record.name);
-//
-//   var imageArray = [
-//     AssetImage("assets/shop1.jpeg"),
-//     AssetImage("assets/shop2.jpeg"),
-//     AssetImage("assets/shop3.jpeg"),
-//   ];
-//
-//
-//   return Container(
-//     child: Expanded(
-//       child: ListView.builder(
-//         itemCount: 1,
-//         scrollDirection: Axis.vertical,
-//         itemBuilder: (context, index) => Container(
-//           child: Column(
-//             children: <Widget>[
-//               ListTile(
-//                 title: Text(record.name),
-//                 subtitle: Text("Opens at" + record.opensAt + "and closes at" + record.closesAt),
-//                 // title: Text(titleList[index]),
-//                 // subtitle: Text(subtitleList[index]),
-//                 isThreeLine: true,
-//                 // onTap: () {
-//                 //   print('tapped');
-//                 //   return MapPage();
-//                 // },
-//                 leading: ClipRRect(
-//                   borderRadius: BorderRadius.circular(5.0),
-//                   child: Image(
-//                     image: imageArray[index],
-//                   ),
-//                 ),
-//                 //  leading: CircleAvatar(
-//                 //    backgroundImage: imageArray[index],
-//               ),
-//
-//             ],
-//           ),
-//         ),
-//       ),
-//     ),
-//   );
-//
-//   // return Padding(
-//   //   key: ValueKey(record.closesAt),
-//   //   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-//   //   child: Container(
-//   //     decoration: BoxDecoration(
-//   //       border: Border.all(color: Colors.grey),
-//   //       borderRadius: BorderRadius.circular(5.0),
-//   //     ),
-//   //     child: ListTile(
-//   //       title: Column(
-//   //         children: <Widget>[
-//   //           Padding(
-//   //             padding: const EdgeInsets.all(10.0),
-//   //             child: Text(
-//   //               record.closesAt,
-//   //               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-//   //             ),
-//   //           ),
-//   //           Image.network(record.opensAt),
-//   //           Padding(
-//   //             padding: const EdgeInsets.all(10.0),
-//   //             child: Column(
-//   //               children: [
-//   //                 Text(
-//   //                   record.name,
-//   //                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10),
-//   //                 ),
-//   //                 Text(
-//   //                   record.longitude,
-//   //                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10),
-//   //                 ),
-//   //                 Text(
-//   //                   record.latitude,
-//   //                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10),
-//   //                 ),
-//   //               ],
-//   //             ),
-//   //           ),
-//   //         ],
-//   //       ),
-//   //     ),
-//   //   ),
-//   // );
-// }
-//
-//
-// class Record {
-//   final String name;
-//   final String opensAt;
-//   final String closesAt;
-//   //final DocumentReference reference;
-//
-//   Record.fromMap(Map<String, dynamic> map, )
-//       : assert(map['name'] != null),
-//         assert(map['opensAt'] != null),
-//         assert(map['closesAt'] != null),
-//
-//         name = map['location'],
-//         opensAt = map['url'],
-//         closesAt = map['store'];
-//
-//
-//
-//   Record.fromSnapshot(DocumentSnapshot snapshot)
-//       : this.fromMap(
-//     snapshot.data(),
-//     //reference: snapshot.reference,
-//   );
-//
-//   @override
-//   String toString() => "Record<$name:$opensAt:$closesAt>";
-// }
-
-
-
-
-
+Widget shopInfo(ShopModel model, BuildContext context) {
+  return InkWell(
+    child: Padding(
+      padding: EdgeInsets.all(6.0),
+      child: Container(
+        height: 150.0,
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.all(Radius.circular(8.0)),
+            color: Colors.white70
+          //color: Colors.deepOrange.shade300.withOpacity(0.55),
+        ),
+        child: Row(
+          children: [
+            SizedBox(width: 10.0),
+            Expanded(
+              child: Container(
+                height: 130.0,
+                width: 175.0,
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                  borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                  image: DecorationImage(
+                    fit: BoxFit.fill,
+                    image: NetworkImage(
+                      model.photoUrl,
+                      // width: 100.0,
+                      // height: 60.0,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(width: 10.0),
+            Expanded(
+              child: Column(
+                //mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 15.0),
+                  Text(
+                    model.name,
+                    style: TextStyle(color: kTextColor, fontSize: 20.0),
+                  ),
+                  SizedBox(height: 5.0),
+                  Container(
+                    height: 55.0,
+                    child: Text(
+                      model.longDescription,
+                      style: TextStyle(color: kTextColor, fontSize: 13.0),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      //Icon(Icons.timer, color: Color(0xff757575),),
+                      Icon(Icons.timer, color: kTextColor, size: 20.0),
+                      SizedBox(
+                        width: 5.0,
+                      ),
+                      Text(
+                        "${model.opnesAt} to",
+                        style: TextStyle(color: kTextColor, fontSize: 13.0),
+                      ),
+                      Text(
+                        model.closesAt,
+                        style: TextStyle(color: kTextColor, fontSize: 13.0),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      //Icon(Icons.location_on, color: Color(0xff757575),),
+                      Icon(Icons.location_on, color: kTextColor, size: 20.0),
+                      SizedBox(
+                        width: 5.0,
+                      ),
+                      Text(
+                        "${model.location} to",
+                        style: TextStyle(color: kTextColor, fontSize: 13.0),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}

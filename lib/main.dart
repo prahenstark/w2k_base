@@ -1,15 +1,23 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:w2k/screens/login_screen.dart';
-import 'package:w2k/screens/lunching_screen.dart';
-import 'package:w2k/screens/registration_screen.dart';
-import 'package:w2k/screens/splash_screen.dart';
-import 'package:w2k/screens/welcome_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:w2k/model/DustbinModel.dart';
+import 'package:w2k/providers/DustbinProvider.dart';
+import 'package:w2k/screens/SplashScreen.dart';
+import 'providers/UserProvider.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_)=> UserProvider()),
+        ChangeNotifierProvider(create: (_)=> DustbinProvider()),
+      ],
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -17,6 +25,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        primaryColor: Colors.green,
+        accentColor: Colors.green,
+        //bottomAppBarColor: Colors.green,
+        //fontFamily: 'Poppins',
+      ),
       debugShowCheckedModeBanner: false,
       home: SplashScreen(),
       //initialRoute: SplashScreen.id,

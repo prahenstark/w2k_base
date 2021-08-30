@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 
-const kPrimarycolor = Color.fromRGBO(241, 196, 15, 1);
+//const kBackground = Color.fromARGB(255,179,255,160);
+const kBackground = Colors.white;
+const kHomecolor = Color.fromARGB(40,9,167,109);
+//const kHomecolor = Color.fromARGB(255,247,252,255);
+const kPrimarycolor = Color.fromARGB(255,9,167,109);
+//const kPrimarycolor = Color.fromARGB(255, 10, 95, 8);
+const kTextColor = Colors.black54;
 
 const kSendButtonTextStyle = TextStyle(
   color: Colors.amber,
@@ -21,6 +27,7 @@ const kMessageContainerDecoration = BoxDecoration(
 );
 
 const kTextFieldDecoration = InputDecoration(
+  prefixIcon: Icon(Icons.help),
   hintText: '',
   hoverColor: Colors.white,
   contentPadding:
@@ -30,12 +37,14 @@ const kTextFieldDecoration = InputDecoration(
   ),
   enabledBorder: OutlineInputBorder(
     borderSide:
-    BorderSide(color: Colors.deepOrangeAccent, width: 1.0),
+    BorderSide(color: kPrimarycolor, width: 1.0),
+    //BorderSide(color: Color.fromARGB(255, 2, 144, 93), width: 1.0),
     borderRadius: BorderRadius.all(Radius.circular(32.0)),
   ),
   focusedBorder: OutlineInputBorder(
     borderSide:
-    BorderSide(color: Colors.deepOrangeAccent, width: 2.0),
+    BorderSide(color: kPrimarycolor, width: 1.0),
+    //BorderSide(color: Color.fromARGB(255, 2, 144, 93), width: 2.0),
     borderRadius: BorderRadius.all(Radius.circular(32.0)),
   ),
 );

@@ -5,21 +5,28 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
+import 'package:flutter/rendering.dart';
+import 'package:geocoder/geocoder.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:provider/provider.dart';
+import 'package:w2k/components/ProfileDrawer.dart';
+import 'package:w2k/constants.dart';
 import 'package:w2k/model/ImageSliderModel.dart';
 import 'package:w2k/helper/helper.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:w2k/model/Listpaymodel.dart';
+import 'package:w2k/model/UserModel.dart';
+import 'package:w2k/pages/LaunchPage.dart';
 import 'package:w2k/pages/MyMoneyPage.dart';
 import 'package:w2k/pages/MapPage.dart';
 import 'package:w2k/pages/HistoryPage.dart';
 import 'package:w2k/pages/StorePage.dart';
-import 'package:w2k/pages/launch_body.dart';
+import 'package:w2k/pages/AdminLaunchPage.dart';
+import 'package:w2k/providers/UserProvider.dart';
 import 'package:w2k/services/bluetooth.dart';
-//import 'package:flutter_blue/flutter_blue.dart' as bluetooth;
 
-final _firestore = FirebaseFirestore.instance;    //Use FirebaseFirestore instead of Firestore.
+final _firestore = FirebaseFirestore.instance; //Use FirebaseFirestore instead of Firestore.
 User loggedInUser;
-//final bluetooth.FlutterBlue flutterBlue = bluetooth.FlutterBlue.instance;
 
 
 class LunchingScreen extends StatefulWidget {
@@ -30,8 +37,8 @@ class LunchingScreen extends StatefulWidget {
 }
 
 class _LunchingScreen extends State<LunchingScreen> {
-
   final _auth = FirebaseAuth.instance;
+
 
   int _currentIndex = 0;
 
@@ -40,10 +47,9 @@ class _LunchingScreen extends State<LunchingScreen> {
   Device device;
   bool get isConnected => connection != null && connection.isConnected;
   String bluetoothValueToSend;
-  int _deviceState;
   String bluetoothDeviceId;
+  BluetoothState _bluetoothState = BluetoothState.STATE_ON;
   bool _isButtonUnavailable = false;
-  BluetoothState _bluetoothState = BluetoothState.UNKNOWN;
   FlutterBluetoothSerial _bluetooth = FlutterBluetoothSerial.instance;
 
   // bluetooth.ScanResult scanResult;
@@ -52,34 +58,32 @@ class _LunchingScreen extends State<LunchingScreen> {
   // List<bluetooth.BluetoothService> _services;
 
 
-  ScanResult resultQr ;
+  ScanResult resultQr;
   List<String> dataList;
   String locationText;
   String gestureLocation;
   int _selectedIndex = 0;
-
 
   @override
   void initState() {
     super.initState();
     getCurrentUser();
     // Get current state
-    FlutterBluetoothSerial.instance.state.then((state) {
-      setState(() {
-        _bluetoothState = state;
-      });
-    });
-
-    _deviceState = 0; // neutral
-
-    // If the bluetooth of the device is not enabled,
-    // then request permission to turn on bluetooth
-    // as the app starts up
-    BluetoothHelper.enableBluetooth(_bluetoothState);
+    // FlutterBluetoothSerial.instance.state.then((state) {
+    //   setState(() {
+    //     _bluetoothState = state;
+    //   });
+    // });
+    //
+    // _deviceState = 0; // neutral
+    //
+    // // If the bluetooth of the device is not enabled,
+    // // then request permission to turn on bluetooth
+    // // as the app starts up
+    // BluetoothHelper.enableBluetooth(_bluetoothState);
   }
 
-
-  void _onItemTap (int index) {
+  void _onItemTap(int index) {
     setState(() {
       _selectedIndex = index;
     });
@@ -96,6 +100,7 @@ class _LunchingScreen extends State<LunchingScreen> {
       print(e);
     }
   }
+
 
 
   //For retrieving and storing the paired devices
@@ -122,8 +127,6 @@ class _LunchingScreen extends State<LunchingScreen> {
   //   // });
   // }
 
-
-
   Future _scanQR() async {
     try {
       ScanResult qrResult = await BarcodeScanner.scan();
@@ -135,7 +138,7 @@ class _LunchingScreen extends State<LunchingScreen> {
         //bluetoothDeviceId = resultQr.rawContent.substring(10,27).toUpperCase();
         //bluetoothDevice.id = bluetoothDeviceId;
         device = Device(bluetoothDeviceId, 'laptop');
-        bluetoothValueToSend =resultQr.rawContent;
+        bluetoothValueToSend = "${Provider.of<UserProvider>(context).user.email};${resultQr.rawContent}";
         print('scanned data is ${resultQr.rawContent} ');
         print('scanned MAC ID is ${bluetoothDeviceId} ');
       });
@@ -154,7 +157,8 @@ class _LunchingScreen extends State<LunchingScreen> {
     }
   }
 
-  void _sendTextMessageToBluetooth(BluetoothConnection connection,String message) async {
+  void _sendTextMessageToBluetooth(
+      BluetoothConnection connection, String message) async {
     connection.output.add(utf8.encode(message + "\r\n"));
     await connection.output.allSent;
 
@@ -163,20 +167,18 @@ class _LunchingScreen extends State<LunchingScreen> {
     // });
   }
 
-
-
-
   _showSingleChoiceDialog(BuildContext context, String title) => showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        backgroundColor: Colors.deepOrangeAccent,
-        content: Text( title, style: TextStyle(fontSize: 20.0, color: Colors.white),),
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            backgroundColor: Colors.deepOrangeAccent,
+            content: Text(
+              title,
+              style: TextStyle(fontSize: 20.0, color: Colors.white),
+            ),
+          );
+        },
       );
-    },
-  );
-
-
 
   // void _connect() async {
   //   setState(() {
@@ -215,30 +217,39 @@ class _LunchingScreen extends State<LunchingScreen> {
   //   }
   // }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _appBar(),
-      body: pageCaller(_selectedIndex),
+      //extendBodyBehindAppBar: true,
+      //extendBody: true,
+      body: Container(
+        // decoration: BoxDecoration(
+        //   image: DecorationImage(
+        //     image: AssetImage('assets/home1.jpeg'),
+        //     fit: BoxFit.cover,
+        //     colorFilter: ColorFilter.mode(
+        //         Colors.white.withOpacity(0.9), BlendMode.dstATop),
+        //   ),
+        // ),
+        child: pageCaller(_selectedIndex),
+      ),
       bottomNavigationBar: _bottemTab(),
       //body: pageCaller(_selectedIndex),
     );
   }
 
-
-
   Widget pageCaller(int index) {
     switch (index) {
       case 0:
         {
-          return LaunchBody();
+          //return LaunchBody();
+          return LaunchPage();
         }
         break;
       case 1:
         {
-          return ShopPage();
+          return StorePage();
         }
         break;
       case 2:
@@ -259,93 +270,68 @@ class _LunchingScreen extends State<LunchingScreen> {
     }
   }
 
-
-
   Widget _appBar() {
     return new AppBar(
-      backgroundColor: Colors.deepOrangeAccent,
-      actions: <Widget>[
-        Padding(
-          padding: const EdgeInsets.only(right: 124),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              CircleAvatar(
-                radius: 20.0,
-                backgroundImage: AssetImage('assets/user.jpeg'),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(3.0, 12.0, 0.0, 0.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      'Your Location',
-                      style: TextStyle(fontSize: 10),
-                    ),
-                    Row(children: <Widget>[
-                      Text(
-                        //gestureLocation,
-                        'Cuttack',
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.bold),
-                      ),
-                      // TextField(
-                      //   selectionHeightStyle: BoxHeightStyle.tight,
-                      //   selectionWidthStyle: BoxWidthStyle.tight,
-                      //   textAlign: TextAlign.center,
-                      //   enabled: false,
-                      //   onChanged: (gestureLocation) {
-                      //     locationText = gestureLocation;
-                      //     //Do something with the user input.
-                      //   },
-                      //   style: TextStyle(
-                      //       fontSize: 14, fontWeight: FontWeight.bold),
-                      // ),
-                      // Flexible(
-                      //   child: SizedBox(
-                      //     height: 16.0,
-                      //     width: 45.0,
-                      //     child: TextField(
-                      //       readOnly: true,
-                      //       enableInteractiveSelection: true,
-                      //       // onChanged: (value) {
-                      //       //     locationText = gestureLocation;
-                      //       //     //Do something with the user input.
-                      //       //   },
-                      //       style: TextStyle(
-                      //       fontSize: 14, fontWeight: FontWeight.bold),
-                      //       ),
-                      //   ),
-                      // ),
-                      // Flexible(
-                      //   child: SizedBox(
-                      //     height: 16.0,
-                      //     width: 45.0,
-                      //     child: Container(
-                      //       child: Text(
-                      //         'Cuttack',
-                      //         style: TextStyle(
-                      //             fontSize: 14, fontWeight: FontWeight.bold),
-                      //       ),
-                      //     ),
-                      //   ),
-                      // ),
-                      GestureDetector(
-                        child: Icon(Icons.arrow_drop_down),
-                        onTap: () {
-                          print('gesture tapped');
-                          gestureLocation = 'Cuttack';
-                        },
-                      ),
-                    ]),
-                  ],
-                ),
-              ),
-            ],
+      automaticallyImplyLeading: false,
+      //backgroundColor: Colors.deepOrangeAccent.withOpacity(0.3),
+      backgroundColor: kPrimarycolor,
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          GestureDetector(
+            onTap:() {
+              Navigator.pushNamed(context, ProfileDrawerWidget.id);
+            },
+            child: CircleAvatar(
+              radius: 20.0,
+              backgroundImage: AssetImage('assets/user.jpeg'),
+            ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(15, 5.0, 0.0, 0.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  'Your Location',
+                  style: TextStyle(fontSize: 10),
+                ),
+                Row(children: <Widget>[
+                  Container(
+                    //width: 50.0,
+                    //color: Colors.blue,
+                    child: Text(
+                      'Banki',
+                      //Provider.of<UserProvider>(context,listen: false).user.name,
+                      //gestureLocation,
+                      //Provider.of<UserProvider>(context,listen: false).user.location,
+                      //userModel.location.toString(),
+                      style: TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  GestureDetector(
+                    child: Icon(Icons.arrow_drop_down),
+                    onTap: () {
+                      print('gesture tapped');
+                      //gestureLocation = userModel.name;
+                    },
+                  ),
+                ]),
+              ],
+            ),
+          ),
+        ],
+      ),
+      actions: <Widget>[
+        //   Container(
+        //     width: 230.0,
+        //     //color: Colors.blue,
+        //     //child:
+        //   //),
+        // //),
         Row(
           children: <Widget>[
             GestureDetector(
@@ -358,29 +344,31 @@ class _LunchingScreen extends State<LunchingScreen> {
                   width: 24,
                 ),
               ),
-              onTap: () async{
+              onTap: () async {
                 await _scanQR();
                 print('scanner tapped');
-                _showSingleChoiceDialog(context, "Connecting to $bluetoothDeviceId Mac Id");
+                _showSingleChoiceDialog(
+                    context, "Connecting to $bluetoothDeviceId Mac Id");
                 try {
-                  setState(() {
-                  });
-                  connection = await BluetoothConnection.toAddress(device.myAddress);
+                  setState(() {});
+                  connection =
+                      await BluetoothConnection.toAddress(device.myAddress);
                   print('Connected to the device');
                   //print(connec);
-                  _sendTextMessageToBluetooth(connection,bluetoothValueToSend);
+                  _sendTextMessageToBluetooth(connection, bluetoothValueToSend);
+                  print(bluetoothValueToSend);
                   print('Coneected to $bluetoothDeviceId');
                   _showSingleChoiceDialog(context, "Message sent.");
-                }
-                catch (exception) {
+                } catch (exception) {
                   print('Cannot connect, exception is $exception');
-                  _showSingleChoiceDialog(context, 'Sending Failed! Can not connect ');
+                  _showSingleChoiceDialog(
+                      context, 'Sending Failed! Can not connect ');
                   print(bluetoothDeviceId);
                 }
               },
             ),
             GestureDetector(
-              onTap: () async{
+              onTap: () async {
                 //BluetoothConnection.toAddress(bluetoothDeviceId);
               },
               // onTap: () async{
@@ -417,17 +405,18 @@ class _LunchingScreen extends State<LunchingScreen> {
             ),
             GestureDetector(
               onTap: () {
-                try{
+                try {
                   if (isConnected == true) {
-                    _sendTextMessageToBluetooth(connection,"Close_lid");
+                    _sendTextMessageToBluetooth(connection, "Close_lid");
                     _showSingleChoiceDialog(context, "Close Message sent.");
                     BluetoothHelper.disableBluetooth(_bluetoothState);
+                  } else {
+                    _showSingleChoiceDialog(
+                        context, "Bluetooth not connected.");
                   }
-                  else{
-                    _showSingleChoiceDialog(context, "Bluetooth not connected.");
-                  }
-                }catch(e) {
-                  _showSingleChoiceDialog(context, "Close Message sending Failed.");
+                } catch (e) {
+                  _showSingleChoiceDialog(
+                      context, "Close Message sending Failed.");
                 }
               },
               child: Padding(
@@ -450,50 +439,50 @@ class _LunchingScreen extends State<LunchingScreen> {
     );
   }
 
-
   Widget _bottemTab() {
-
-    return BottomNavigationBar(
-      backgroundColor: Colors.deepOrangeAccent,
-      selectedItemColor: Colors.white,
-      type: BottomNavigationBarType.fixed,
-      items: [
-        BottomNavigationBarItem(
-          icon: Icon(
-            Icons.home,
+    return Container(
+      //color: Color.fromARGB(255,247, 252, 255),
+      decoration: BoxDecoration(
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: Colors.grey.shade400,
+            blurRadius: 5,
           ),
-          title: Text(
-            'Home',
+        ],
+      ),
+      child: BottomNavigationBar(
+        //backgroundColor: Colors.deepOrangeAccent.withOpacity(0.4),
+        elevation: 27.5,
+        backgroundColor: kBackground.withOpacity(0.7),
+        selectedItemColor: kPrimarycolor,
+        type: BottomNavigationBarType.fixed,
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.home,
+            ),
+            label: 'Home',
           ),
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.shopping_bag),
-          title: Text(
-            'Stores',
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_bag),
+            label: 'Stores',
           ),
-        ),
-        new BottomNavigationBarItem(
-          icon: Icon(Icons.location_on),
-          title: Text(
-            'Map',
+          new BottomNavigationBarItem(
+            icon: Icon(Icons.location_on),
+            label: 'Map',
           ),
-        ),
-        new BottomNavigationBarItem(
-          icon: Icon(Icons.account_balance_wallet),
-          title: Text(
-            'My Wallet',
+          new BottomNavigationBarItem(
+            icon: Icon(Icons.account_balance_wallet),
+            label: 'My Wallet',
           ),
-        ),
-        new BottomNavigationBarItem(
-          icon: Icon(Icons.history),
-          title: Text(
-            'History',
+          new BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'History',
           ),
-        ),
-      ],
-      currentIndex: _selectedIndex,
-      onTap: _onItemTap,
-
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTap,
+      ),
     );
   }
 
